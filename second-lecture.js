@@ -47,24 +47,68 @@
 // server.listen(3000);
 
 
-//5 -routing based on url and getting message from user
-const  http = require('http');
-const server = http.createServer((req, res) =>{
+//5 -routing based on url and getting message from user. writing dummy text to file after send button
+// const  http = require('http');
+// const fs = require('fs');
+
+// const server = http.createServer((req, res) =>{
+//     const url = req.url;
+//     const method = req.method;
+//     //if there is only / 
+//     if(url === '/'){
+//         res.write('<html>');
+//         res.write('<head><title>First Page</title></head>');
+//         res.write('<body><form action="/message" method="POST" ><input type="text" name="message"><button type="submit">Send</button></form></body>')
+//         res.write('</html>');
+//         return res.end();
+//     }
+//     if(url === '/message' && method === 'POST'){
+//         fs.writeFileSync('message.txt', 'dumy');
+//         res.statusCode = 302;
+//         res.setHeader('Location', '/');
+//         return res.end();
+//     }
+//     res.write('<html>');
+//     res.write('<head><title>First Page</title></head><body><h1>Hello!</h1></body>');
+//     res.write('</html>');
+//     res.end();
+
+// });
+// server.listen(3000);
+
+
+//6 getting data from user and writing this on file (buffer system)
+const http = require('http');
+const fs = require('fs');
+
+const server = http.createServer((req, res) => {
     const url = req.url;
-    //if there is only / 
-    if(url === '/'){
+    const method = req.method;
+
+    if (url === '/'){
         res.write('<html>');
         res.write('<head><title>First Page</title></head>');
-        res.write('<body><form action="/message" method="POST" ><input type="text"><button type="submit">Send</button></form></body>')
+        res.write('<body><form action="/message" method="POST" ><input type="text" name="message"><button type="submit">Send</button></form></body>')
         res.write('</html>');
         return res.end();
     }
 
-    res.write('<html>');
-    res.write('<head><title>First Page</title></head><body><h1>Hello!</h1></body>');
-    res.write('</html>');
-    res.end();
-
-    
+    if(url === '/message'){
+        const body = [];
+        req.on('data', (chunk) => {
+            //console.log(chunk);
+            body.push(chunk);
+        });
+        req.on('end', () =>{
+            const parsedBody = Buffer.concat(body).toString();
+            const message = parsedBody.split('=')[1];
+            fs.writeFileSync('message.txt', message);
+        });
+        
+        res.statusCode = 302;
+        res.setHeader('Location', '/');
+        return res.end();
+    }
 });
+
 server.listen(3000);
